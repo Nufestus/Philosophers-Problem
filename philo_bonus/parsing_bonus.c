@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parsing.c                                          :+:      :+:    :+:   */
+/*   parsing_bonus.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/22 13:46:46 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/03 00:29:40 by aammisse         ###   ########.fr       */
+/*   Created: 2025/03/01 19:28:50 by aammisse          #+#    #+#             */
+/*   Updated: 2025/03/02 21:32:32 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philosophers.h"
+#include "philosophers_bonus.h"
 
 long long	ft_atol(char *str)
 {
@@ -47,7 +47,7 @@ int	parseargs(char **av)
 	while (av[i])
 	{
 		number = ft_atol(av[i]);
-		if (number > INT_MAX || number < 0)
+		if (number > INT_MAX || number < INT_MIN)
 			return (write(2, "Error\n", 7), 0);
 		i++;
 	}
