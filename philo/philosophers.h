@@ -6,7 +6,7 @@
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 17:02:51 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/01 19:42:00 by aammisse         ###   ########.fr       */
+/*   Updated: 2025/03/05 17:27:20 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include <stdbool.h>
 
 struct	s_thread;
+struct s_philosopher;
 
 typedef struct s_philosopher
 {
@@ -38,6 +39,7 @@ typedef struct s_philosopher
 	size_t			starttime;
 	size_t			lastmeal;
 	pthread_t		id;
+	pthread_t		bigbrother;
 	pthread_mutex_t	*left_f;
 	pthread_mutex_t	*right_f;
 	struct s_thread	*info;
@@ -72,6 +74,7 @@ void		takefork(t_philosopher *philo);
 void		*check_death(void *arg);
 void		printstate(t_philosopher *philo, char *str);
 void		ft_usleep(size_t millisec);
+void		terminate(t_thread *info);
 size_t		get_time(void);
 size_t		ft_strlen(const char *s);
 long long	ft_atol(char *str);

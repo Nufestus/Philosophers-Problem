@@ -6,34 +6,44 @@
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 17:02:38 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/01 19:46:55 by aammisse         ###   ########.fr       */
+/*   Updated: 2025/03/06 19:46:09 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
+void takefork2(t_philosopher *philo)
+{
+	pthread_mutex_lock(philo->right_f);
+	printstate(philo, "has taken a fork");
+	if (philo->philo_number == 1)
+	{
+		ft_usleep(philo->dietime * 2);
+		return ;
+	}
+	pthread_mutex_lock(philo->left_f);
+	printstate(philo, "has taken a fork");
+}
+
 void	*philoroutine(void *arg)
 {
-	pthread_t		bigbrother;
 	t_philosopher	*philo;
 
 	philo = (t_philosopher *)arg;
-	if (philo->index % 2 == 0)
-		ft_usleep(philo->eattime / 10);
 	while (!isdead(philo, 0))
 	{
-		pthread_create(&bigbrother, NULL, check_death, philo);
-		takefork(philo);
+		pthread_create(&philo->bigbrother, NULL, check_death, philo);
+		if (philo->index % 2 == 0)
+			takefork(philo);
+		else
+			takefork2(philo);
 		ft_eat(philo);
-		pthread_detach(bigbrother);
+		pthread_detach(philo->bigbrother);
 		if (philo->meals_counter == philo->meals)
 		{
 			pthread_mutex_lock(&philo->info->stop);
 			if (++philo->info->philoeat == philo->info->philo_number)
-			{
-				pthread_mutex_unlock(&philo->info->stop);
 				isdead(philo, 2);
-			}
 			pthread_mutex_unlock(&philo->info->stop);
 			return (NULL);
 		}
@@ -113,7 +123,12 @@ int	main(int ac, char **av)
 	info.av = av;
 	info.meals = -1;
 	info.philoeat = 0;
-	if (!initdata(av, ac, &info) || !initphilo(&info))
+	if (!initdata(av, ac, &info))
 		return (write(2, "Error\n", 7), 0);
+	if (info.meals == 0)
+		terminate(&info);
+	if (!initphilo(&info))
+		return (write(2, "Error\n", 7), 0);
+	// terminate(&info);
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/02 21:33:24 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/02 21:33:31 by aammisse         ###   ########.fr       */
+/*   Updated: 2025/03/05 17:44:33 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,4 +44,20 @@ size_t	ft_strlen(const char *s)
 	while (s[i])
 		++i;
 	return (i);
+}
+
+void terminate(t_thread *info)
+{
+	int i;
+
+	i = -1;
+	free(info->forks);
+	free(info->philos);
+	while(++i < info->philo_number)
+		pthread_mutex_destroy(&info->forks[i]);
+	pthread_mutex_destroy(&info->write);
+	pthread_mutex_destroy(&info->stop);
+	pthread_mutex_destroy(&info->lastmeal);
+	pthread_mutex_destroy(&info->death);
+	exit(0);
 }

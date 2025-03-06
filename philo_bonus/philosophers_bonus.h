@@ -6,14 +6,14 @@
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 19:28:29 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/02 21:32:50 by aammisse         ###   ########.fr       */
+/*   Updated: 2025/03/05 18:02:59 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PHILOSOPHERS_BONUS_H
 # define PHILOSOPHERS_BONUS_H
 
-# include <pthread.h>
+# include <semaphore.h>
 # include <sys/time.h>
 # include <unistd.h>
 # include <stdio.h>
@@ -21,12 +21,14 @@
 # include <string.h>
 # include <errno.h>
 # include <limits.h>
+# include <fcntl.h>
 # include <stdbool.h>
 
 struct	s_thread;
 
 typedef struct s_philosopher
 {
+	pid_t			id;
 	int				index;
 	int				meals;
 	int				meals_counter;
@@ -37,9 +39,8 @@ typedef struct s_philosopher
 	size_t			sleeptime;
 	size_t			starttime;
 	size_t			lastmeal;
-	pthread_t		id;
-	pthread_mutex_t	*left_f;
-	pthread_mutex_t	*right_f;
+	sem_t	*left_f;
+	sem_t	*right_f;
 	struct s_thread	*info;
 }			t_philosopher;
 
@@ -56,11 +57,11 @@ typedef struct s_thread
 	size_t			sleeptime;
 	size_t			starttime;
 	t_philosopher	*philos;
-	pthread_mutex_t	write;
-	pthread_mutex_t	stop;
-	pthread_mutex_t	death;
-	pthread_mutex_t	lastmeal;
-	pthread_mutex_t	*forks;
+	sem_t	write;
+	sem_t	stop;
+	sem_t	death;
+	sem_t	lastmeal;
+	sem_t	*forks;
 }				t_thread;
 
 int			parseargs(char **av);

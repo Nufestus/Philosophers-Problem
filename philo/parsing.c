@@ -6,7 +6,7 @@
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 13:46:46 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/03 00:29:40 by aammisse         ###   ########.fr       */
+/*   Updated: 2025/03/04 22:38:12 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int	parseargs(char **av)
 	{
 		number = ft_atol(av[i]);
 		if (number > INT_MAX || number < 0)
-			return (write(2, "Error\n", 7), 0);
+			return (0);
 		i++;
 	}
 	return (1);

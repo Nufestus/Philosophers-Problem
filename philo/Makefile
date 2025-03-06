@@ -6,7 +6,7 @@
 #    By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/19 17:12:49 by aammisse          #+#    #+#              #
-#    Updated: 2025/03/01 19:35:18 by aammisse         ###   ########.fr        #
+#    Updated: 2025/03/06 19:36:22 by aammisse         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME = philo
 
 CC = cc
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -fsanitize=thread -g3
 
 SRCS = philosophers.c parsing.c routine.c utils.c
 

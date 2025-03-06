@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   routine.c                                          :+:      :+:    :+:   */
+/*   routine_bonus.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/01 19:32:13 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/06 19:34:01 by aammisse         ###   ########.fr       */
+/*   Created: 2025/03/05 17:45:27 by aammisse          #+#    #+#             */
+/*   Updated: 2025/03/05 17:45:43 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philosophers.h"
+#include "philosophers_bonus.h"
 
 int	isdead(t_philosopher *philo, int flag)
 {
@@ -20,8 +20,8 @@ int	isdead(t_philosopher *philo, int flag)
 	if (philo->info->shutdown)
 	{
 		pthread_mutex_unlock(&philo->info->death);
-		// terminate(philo->info);
-		// exit(0);
+		terminate(philo->info);
+		exit(0);
 		return (1);
 	}
 	pthread_mutex_unlock(&philo->info->death);
@@ -46,14 +46,17 @@ void	*check_death(void *arg)
 	philo = (t_philosopher *)arg;
 	ft_usleep(philo->dietime + 1);
 	pthread_mutex_lock(&philo->info->lastmeal);
+	pthread_mutex_lock(&philo->info->stop);
 	if (!isdead(philo, 0) && get_time() - philo->lastmeal >= philo->dietime)
 	{
 		pthread_mutex_unlock(&philo->info->lastmeal);
+		pthread_mutex_unlock(&philo->info->stop);
 		printstate(philo, "died");
 		isdead(philo, 1);
 		return (NULL);
 	}
 	pthread_mutex_unlock(&philo->info->lastmeal);
+	pthread_mutex_unlock(&philo->info->stop);
 	return (NULL);
 }
 
