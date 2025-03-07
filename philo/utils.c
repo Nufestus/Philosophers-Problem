@@ -6,7 +6,7 @@
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 19:30:27 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/06 19:45:34 by aammisse         ###   ########.fr       */
+/*   Updated: 2025/03/06 20:03:50 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void	ft_usleep(size_t millisec)
 
 	starttime = get_time();
 	while ((get_time() - starttime) < millisec)
-		usleep(millisec / 10);
+		usleep(50);
 }
 
 size_t	ft_strlen(const char *s)
@@ -53,6 +53,7 @@ void terminate(t_thread *info)
 	i = -1;
 	while(++i < info->philo_number)
 	{
+        pthread_detach(info->philos[i].id);
 		pthread_mutex_destroy(&info->forks[i]);
 	}
 	free(info->forks);
