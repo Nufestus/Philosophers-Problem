@@ -33,7 +33,7 @@ void	ft_usleep(size_t millisec)
 
 	starttime = get_time();
 	while ((get_time() - starttime) < millisec)
-		usleep(50);
+		usleep(200);
 }
 
 size_t	ft_strlen(const char *s)
@@ -52,14 +52,12 @@ void terminate(t_thread *info)
 
 	i = -1;
 	while(++i < info->philo_number)
-	{
-        pthread_detach(info->philos[i].id);
 		pthread_mutex_destroy(&info->forks[i]);
-	}
 	free(info->forks);
 	free(info->philos);
 	pthread_mutex_destroy(&info->write);
 	pthread_mutex_destroy(&info->stop);
 	pthread_mutex_destroy(&info->lastmeal);
 	pthread_mutex_destroy(&info->death);
+	exit(0);
 }

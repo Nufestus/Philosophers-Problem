@@ -12,49 +12,17 @@
 
 #include "philosophers.h"
 
-int	isdead(t_philosopher *philo, int flag)
-{
-	pthread_mutex_lock(&philo->info->death);
-	if (flag)
-		philo->info->shutdown = 1;
-	if (philo->info->shutdown)
-	{
-		pthread_mutex_unlock(&philo->info->death);
-		// terminate(philo->info);
-		// exit(0);
-		return (1);
-	}
-	pthread_mutex_unlock(&philo->info->death);
-	return (0);
-}
-
 void	printstate(t_philosopher *philo, char *str)
 {
 	size_t	time;
 
 	pthread_mutex_lock(&philo->info->write);
 	time = get_time() - philo->starttime;
-	if (time >= 0 && !isdead(philo, 0))
+	pthread_mutex_lock(&philo->info->death);
+	if (philo->info->isdead == 0)
 		printf("%zu %d %s\n", get_time() - philo->starttime, philo->index, str);
+	pthread_mutex_unlock(&philo->info->death);
 	pthread_mutex_unlock(&philo->info->write);
-}
-
-void	*check_death(void *arg)
-{
-	t_philosopher	*philo;
-
-	philo = (t_philosopher *)arg;
-	ft_usleep(philo->dietime + 1);
-	pthread_mutex_lock(&philo->info->lastmeal);
-	if (!isdead(philo, 0) && get_time() - philo->lastmeal >= philo->dietime)
-	{
-		pthread_mutex_unlock(&philo->info->lastmeal);
-		printstate(philo, "died");
-		isdead(philo, 1);
-		return (NULL);
-	}
-	pthread_mutex_unlock(&philo->info->lastmeal);
-	return (NULL);
 }
 
 void	takefork(t_philosopher *philo)

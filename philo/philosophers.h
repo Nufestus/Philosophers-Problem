@@ -24,11 +24,13 @@
 # include <stdbool.h>
 
 struct	s_thread;
-struct s_philosopher;
+struct	s_philosopher;
 
 typedef struct s_philosopher
 {
 	int				index;
+	int				dead;
+	int				*deathpointer;
 	int				meals;
 	int				meals_counter;
 	int				philo_number;
@@ -39,7 +41,6 @@ typedef struct s_philosopher
 	size_t			starttime;
 	size_t			lastmeal;
 	pthread_t		id;
-	pthread_t		bigbrother;
 	pthread_mutex_t	*left_f;
 	pthread_mutex_t	*right_f;
 	struct s_thread	*info;
@@ -48,6 +49,7 @@ typedef struct s_philosopher
 typedef struct s_thread
 {
 	int				ac;
+	int				isdead;
 	int				meals;
 	int				philoeat;
 	int				shutdown;

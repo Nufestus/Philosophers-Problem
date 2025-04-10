@@ -25,30 +25,113 @@ void takefork2(t_philosopher *philo)
 	printstate(philo, "has taken a fork");
 }
 
+int	checkdeath(t_philosopher *philo)
+{
+	pthread_mutex_lock(&philo->info->death);
+	if (philo->dead == 1)
+		return (pthread_mutex_unlock(&philo->info->death), 1);
+	pthread_mutex_unlock(&philo->info->death);
+	return (0);
+}
+
 void	*philoroutine(void *arg)
 {
 	t_philosopher	*philo;
 
 	philo = (t_philosopher *)arg;
-	while (!isdead(philo, 0))
+	while (!checkdeath(philo))
 	{
-		pthread_create(&philo->bigbrother, NULL, check_death, philo);
 		if (philo->index % 2 == 0)
 			takefork(philo);
 		else
 			takefork2(philo);
 		ft_eat(philo);
-		pthread_detach(philo->bigbrother);
-		if (philo->meals_counter == philo->meals)
+		if (philo->meals_counter == philo->meals || checkdeath(philo))
 		{
-			pthread_mutex_lock(&philo->info->stop);
-			if (++philo->info->philoeat == philo->info->philo_number)
-				isdead(philo, 2);
-			pthread_mutex_unlock(&philo->info->stop);
-			return (NULL);
+			if (philo->meals_counter == philo->meals)
+			{
+				pthread_mutex_lock(&philo->info->stop);
+				philo->iseating = false;
+				pthread_mutex_unlock(&philo->info->stop);
+			}
+			break ;
 		}
 	}
 	return (NULL);
+}
+
+int checkeat(t_philosopher *philo)
+{
+	if (philo->meals == -1)
+		return (1);
+	pthread_mutex_lock(&philo->info->stop);
+	if (philo->iseating == true)
+		return (pthread_mutex_unlock(&philo->info->stop), 1);
+	pthread_mutex_unlock(&philo->info->stop);
+	return (0);
+}
+
+void *monitoring(void *arg)
+{
+	int	i;
+	int result;
+	t_thread *info;
+
+	info = (t_thread *)arg;
+	while (1)
+	{
+		i = -1;
+		result = 0;
+		while(++i < info->philo_number)
+		{
+			pthread_mutex_lock(&info->lastmeal);
+			if (checkeat(&(info->philos[i])))
+				result++;
+			else
+			{
+				if (get_time() - info->philos[i].lastmeal >= info->philos[i].dietime)
+				{
+					pthread_mutex_unlock(&info->lastmeal);
+					printstate(&(info->philos[i]), "died");
+					pthread_mutex_lock(&info->death);
+					info->isdead = 1;
+					info->philos[i].dead = 1;
+					pthread_mutex_unlock(&info->death);
+					return (NULL);
+				}
+			}
+			pthread_mutex_unlock(&info->lastmeal);
+		}
+		if (result + 1 == info->philo_number || info->isdead == 1)
+		{
+			printf("hello world\n");
+			break;
+		}
+	}
+	return (NULL);
+}
+
+int startsim(t_thread *info)
+{
+	int	i;
+	t_philosopher monitor;
+
+	i = -1;
+	if (pthread_create(&monitor.id, NULL, monitoring, info))
+		return (0);
+	while (++i < info->philo_number)
+	{
+		if (pthread_create(&info->philos[i].id, NULL,
+				&philoroutine, &info->philos[i]))
+			return (0);
+	}
+	i = -1;
+	if (pthread_join(monitor.id, NULL))
+		return (0);
+	while (++i < info->philo_number)
+		if (pthread_join(info->philos[i].id, NULL))
+			return (0);
+	return (1);
 }
 
 int	initphilo(t_thread *info)
@@ -59,6 +142,9 @@ int	initphilo(t_thread *info)
 	info->starttime = get_time();
 	while (++i < info->philo_number)
 	{
+		info->philos[i].dead = 0;
+		info->philos[i].iseating = true;
+		info->philos[i].deathpointer = &info->isdead;
 		info->philos[i].starttime = info->starttime;
 		info->philos[i].index = i + 1;
 		info->philos[i].left_f = &info->forks[i];
@@ -69,14 +155,9 @@ int	initphilo(t_thread *info)
 		info->philos[i].eattime = info->eattime;
 		info->philos[i].meals = info->meals;
 		info->philos[i].philo_number = info->philo_number;
+		info->philos[i].lastmeal = get_time();
 		info->philos[i].info = info;
-		if (pthread_create(&info->philos[i].id, NULL,
-				&philoroutine, &info->philos[i]))
-			return (0);
 	}
-	i = -1;
-	while (++i < info->philo_number)
-		pthread_join(info->philos[i].id, NULL);
 	return (1);
 }
 
@@ -84,6 +165,7 @@ int	initdata(char **av, int ac, t_thread *info)
 {
 	int	i;
 
+	info->isdead = 0;
 	pthread_mutex_init(&info->write, NULL);
 	pthread_mutex_init(&info->stop, NULL);
 	pthread_mutex_init(&info->lastmeal, NULL);
@@ -127,8 +209,9 @@ int	main(int ac, char **av)
 		return (write(2, "Error\n", 7), 0);
 	if (info.meals == 0)
 		terminate(&info);
-	if (!initphilo(&info))
+	initphilo(&info);
+	if (!startsim(&info))
 		return (write(2, "Error\n", 7), 0);
-	// terminate(&info);
+	terminate(&info);
 	return (0);
 }
