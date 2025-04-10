@@ -6,7 +6,7 @@
 /*   By: aammisse <aammisse@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 17:02:38 by aammisse          #+#    #+#             */
-/*   Updated: 2025/03/06 21:39:58 by aammisse         ###   ########.fr       */
+/*   Updated: 2025/04/11 00:07:54 by aammisse         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void takefork2(t_philosopher *philo)
 int	checkdeath(t_philosopher *philo)
 {
 	pthread_mutex_lock(&philo->info->death);
-	if (philo->dead == 1)
+	if (philo->info->isdead == 1)
 		return (pthread_mutex_unlock(&philo->info->death), 1);
 	pthread_mutex_unlock(&philo->info->death);
 	return (0);
@@ -60,36 +60,38 @@ void	*philoroutine(void *arg)
 	return (NULL);
 }
 
-int checkeat(t_philosopher *philo)
+int checkeat(t_thread *info)
 {
-	if (philo->meals == -1)
+	int i;
+	int res;
+
+	i = -1;
+	res = 0;
+	while(++i < info->philo_number)
+	{
+		pthread_mutex_lock(&info->stop);
+		if (info->philos[i].iseating == false)
+			res++;
+		pthread_mutex_unlock(&info->stop);
+	}
+	if (res == info->philo_number)
 		return (1);
-	pthread_mutex_lock(&philo->info->stop);
-	if (philo->iseating == true)
-		return (pthread_mutex_unlock(&philo->info->stop), 1);
-	pthread_mutex_unlock(&philo->info->stop);
 	return (0);
 }
 
 void *monitoring(void *arg)
 {
 	int	i;
-	int result;
 	t_thread *info;
 
 	info = (t_thread *)arg;
 	while (1)
 	{
 		i = -1;
-		result = 0;
 		while(++i < info->philo_number)
 		{
 			pthread_mutex_lock(&info->lastmeal);
-			if (checkeat(&(info->philos[i])))
-				result++;
-			else
-			{
-				if (get_time() - info->philos[i].lastmeal >= info->philos[i].dietime)
+				if (get_time() - info->philos[i].lastmeal > info->dietime && info->philos[i].iseating == true)
 				{
 					pthread_mutex_unlock(&info->lastmeal);
 					printstate(&(info->philos[i]), "died");
@@ -99,14 +101,15 @@ void *monitoring(void *arg)
 					pthread_mutex_unlock(&info->death);
 					return (NULL);
 				}
-			}
 			pthread_mutex_unlock(&info->lastmeal);
 		}
-		if (result + 1 == info->philo_number || info->isdead == 1)
+		pthread_mutex_lock(&info->death);
+		if (info->isdead == 1 || checkeat(info))
 		{
-			printf("hello world\n");
-			break;
+			pthread_mutex_unlock(&info->death);
+			break ;
 		}
+		pthread_mutex_unlock(&info->death);
 	}
 	return (NULL);
 }
