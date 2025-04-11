@@ -3,3 +3,6 @@ While working on my philosophers project, I ran into several tricky issues with 
 
 
 <img width="463" alt="Screen Shot 2025-04-11 at 4 01 00 PM" src="https://github.com/user-attachments/assets/4a7ae656-ca58-4c45-98d3-f0b64d7e8084" />
+
+
+ps : you might find some delays from time to time but dont worry its all a pc problem lol :P
