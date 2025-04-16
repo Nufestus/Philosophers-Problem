@@ -12,78 +12,59 @@
 
 #include "philosophers_bonus.h"
 
-int	isdead(t_philosopher *philo, int flag)
-{
-	pthread_mutex_lock(&philo->info->death);
-	if (flag)
-		philo->info->shutdown = 1;
-	if (philo->info->shutdown)
-	{
-		pthread_mutex_unlock(&philo->info->death);
-		terminate(philo->info);
-		exit(0);
-		return (1);
-	}
-	pthread_mutex_unlock(&philo->info->death);
-	return (0);
-}
-
-void	printstate(t_philosopher *philo, char *str)
+void	printstate(t_philosopher *philo, char *str, int flag)
 {
 	size_t	time;
 
-	pthread_mutex_lock(&philo->info->write);
-	time = get_time() - philo->starttime;
-	if (time >= 0 && !isdead(philo, 0))
-		printf("%zu %d %s\n", get_time() - philo->starttime, philo->index, str);
-	pthread_mutex_unlock(&philo->info->write);
-}
-
-void	*check_death(void *arg)
-{
-	t_philosopher	*philo;
-
-	philo = (t_philosopher *)arg;
-	ft_usleep(philo->dietime + 1);
-	pthread_mutex_lock(&philo->info->lastmeal);
-	pthread_mutex_lock(&philo->info->stop);
-	if (!isdead(philo, 0) && get_time() - philo->lastmeal >= philo->dietime)
+	if (flag)
 	{
-		pthread_mutex_unlock(&philo->info->lastmeal);
-		pthread_mutex_unlock(&philo->info->stop);
-		printstate(philo, "died");
-		isdead(philo, 1);
-		return (NULL);
+		sem_wait(philo->writephilo);
+		time = get_time() - philo->starttime;
+		printf("%zu %d %s\n", get_time() - philo->starttime, philo->index, str);
+		sem_post(philo->writephilo);
 	}
-	pthread_mutex_unlock(&philo->info->lastmeal);
-	pthread_mutex_unlock(&philo->info->stop);
-	return (NULL);
+	else
+	{
+		sem_wait(philo->writephilo);
+		time = get_time() - philo->starttime;
+		if (!checkdeath(philo->info))
+			printf("%zu %d %s\n", get_time() - philo->starttime, philo->index, str);
+		sem_post(philo->writephilo);
+	}
 }
 
 void	takefork(t_philosopher *philo)
 {
-	pthread_mutex_lock(philo->left_f);
-	printstate(philo, "has taken a fork");
-	if (philo->philo_number == 1)
-	{
-		ft_usleep(philo->dietime * 2);
-		return ;
-	}
-	pthread_mutex_lock(philo->right_f);
-	printstate(philo, "has taken a fork");
+	sem_wait(philo->forks);
+	printstate(philo, "has taken a fork", 0);
+	sem_wait(philo->forks);
+	printstate(philo, "has taken a fork", 0);
+}
+
+void singlephilo(t_philosopher *philo)
+{
+	sem_wait(philo->forks);
+	printstate(philo, "has taken a fork", 0);
+	ft_usleep(philo->dietime + 3);
 }
 
 void	ft_eat(t_philosopher *philo)
 {
-	printstate(philo, "is eating");
-	pthread_mutex_lock(&philo->info->lastmeal);
+	if (philo->index % 2 == 0)
+		takefork(philo);
+	else
+		takefork2(philo);
+	printstate(philo, "is eating", 0);
+	sem_wait(philo->info->lastmeal);
 	philo->lastmeal = get_time();
 	philo->meals_counter++;
-	pthread_mutex_unlock(&philo->info->lastmeal);
+	sem_post(philo->info->lastmeal);
 	ft_usleep(philo->eattime);
-	pthread_mutex_unlock(philo->right_f);
-	pthread_mutex_unlock(philo->left_f);
-	printstate(philo, "is sleeping");
+	sem_post(philo->forks);
+	sem_post(philo->forks);
+	printstate(philo, "is sleeping", 0);
+	if (checkdeath(philo->info))
+		return;
 	ft_usleep(philo->sleeptime);
-	printstate(philo, "is thinking");
+	printstate(philo, "is thinking", 0);
 }

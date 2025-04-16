@@ -46,7 +46,7 @@ size_t	ft_strlen(const char *s)
 	return (i);
 }
 
-void terminate(t_thread *info)
+void clear(t_thread *info)
 {
 	int i;
 
@@ -59,5 +59,4 @@ void terminate(t_thread *info)
 	pthread_mutex_destroy(&info->stop);
 	pthread_mutex_destroy(&info->lastmeal);
 	pthread_mutex_destroy(&info->death);
-	exit(0);
 }

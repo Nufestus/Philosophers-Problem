@@ -16,11 +16,6 @@ void takefork2(t_philosopher *philo)
 {
 	pthread_mutex_lock(philo->right_f);
 	printstate(philo, "has taken a fork");
-	if (philo->philo_number == 1)
-	{
-		ft_usleep(philo->dietime * 2);
-		return ;
-	}
 	pthread_mutex_lock(philo->left_f);
 	printstate(philo, "has taken a fork");
 }
@@ -39,12 +34,14 @@ void	*philoroutine(void *arg)
 	t_philosopher	*philo;
 
 	philo = (t_philosopher *)arg;
+	if (philo->philo_number == 1)
+	{
+		singlephilo(philo);
+		pthread_mutex_unlock(philo->right_f);
+		return (NULL);
+	}
 	while (!checkdeath(philo))
 	{
-		if (philo->index % 2 == 0)
-			takefork(philo);
-		else
-			takefork2(philo);
 		ft_eat(philo);
 		if (philo->meals_counter == philo->meals || checkdeath(philo))
 		{
@@ -110,6 +107,7 @@ void *monitoring(void *arg)
 			break ;
 		}
 		pthread_mutex_unlock(&info->death);
+		usleep(10);
 	}
 	return (NULL);
 }
@@ -211,10 +209,10 @@ int	main(int ac, char **av)
 	if (!initdata(av, ac, &info))
 		return (write(2, "Error\n", 7), 0);
 	if (info.meals == 0)
-		terminate(&info);
+		clear(&info);
 	initphilo(&info);
 	if (!startsim(&info))
 		return (write(2, "Error\n", 7), 0);
-	terminate(&info);
+	clear(&info);
 	return (0);
 }

@@ -16,7 +16,7 @@ CC = cc
 
 CFLAGS = -Wall -Wextra -Werror
 
-SRCS = philosophers_bonus.c parsing_bonus.c utils_bonus.c
+SRCS = philosophers_bonus.c parsing_bonus.c utils_bonus.c routine_bonus.c
 
 OBJS = $(SRCS:.c=.o)
 

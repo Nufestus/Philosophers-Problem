@@ -29,17 +29,23 @@ void	takefork(t_philosopher *philo)
 {
 	pthread_mutex_lock(philo->left_f);
 	printstate(philo, "has taken a fork");
-	if (philo->philo_number == 1)
-	{
-		ft_usleep(philo->dietime * 2);
-		return ;
-	}
 	pthread_mutex_lock(philo->right_f);
 	printstate(philo, "has taken a fork");
 }
 
+void singlephilo(t_philosopher *philo)
+{
+	pthread_mutex_lock(philo->right_f);
+	printstate(philo, "has taken a fork");
+	ft_usleep(philo->dietime);
+}
+
 void	ft_eat(t_philosopher *philo)
 {
+	if (philo->index % 2 == 0)
+		takefork(philo);
+	else
+		takefork2(philo);
 	printstate(philo, "is eating");
 	pthread_mutex_lock(&philo->info->lastmeal);
 	philo->lastmeal = get_time();

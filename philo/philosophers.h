@@ -68,15 +68,15 @@ typedef struct s_thread
 }				t_thread;
 
 int			parseargs(char **av);
-int			isdead(t_philosopher *philo, int flag);
+void		singlephilo(t_philosopher *philo);
+void		takefork2(t_philosopher *philo);
 int			check_num(char **str);
 int			ft_isdigit(int c);
 void		ft_eat(t_philosopher *philo);
 void		takefork(t_philosopher *philo);
-void		*check_death(void *arg);
 void		printstate(t_philosopher *philo, char *str);
 void		ft_usleep(size_t millisec);
-void		terminate(t_thread *info);
+void		clear(t_thread *info);
 size_t		get_time(void);
 size_t		ft_strlen(const char *s);
 long long	ft_atol(char *str);
